@@ -9,7 +9,7 @@ class GreatestCommonDivisor {
         x = a;
         y = b;
         z = gcd(x, y);
-        string s = "if hola mi nombre es ninguno de su negocio break; else continue"
+        string s = "if hola mi nombre es ninguno de su negocio break; else continue";
 
         // print_int is part of the standard input-output library
         print_int(z);

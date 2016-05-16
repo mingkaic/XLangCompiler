@@ -8,9 +8,9 @@ int main() {
 	populateTokenMap(TOKENFILE);
 	testfile.open("test.txt");
 	std::stringstream gatherer;
-	// performed in series... consider parallel for speedup
 	scan(testfile, gatherer);
-	lex(gatherer);
+	std::string content = gatherer.str();
+	lex(content);
 	testfile.close();
 
 	return 0;

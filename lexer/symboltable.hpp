@@ -6,4 +6,4 @@
 
 void populateTokenMap(std::string tokenfname);
 std::string getPattern(std::string tokenname);
-void mapAccess(std::function<void(std::string, std::string)> perform);
+void mapAccess(std::function<void(std::string, std::string, size_t)> perform);
