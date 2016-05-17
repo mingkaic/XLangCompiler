@@ -1,17 +1,14 @@
 #include <sstream>
-#include "scanner.cpp"
-
-#define TOKENFILE "decafTokens.txt"
+#include "lexer.hpp"
 
 int main() {
-	std::ifstream testfile;
-	populateTokenMap(TOKENFILE);
-	testfile.open("test.txt");
-	std::stringstream gatherer;
-	scan(testfile, gatherer);
-	std::string content = gatherer.str();
-	lex(content);
-	testfile.close();
+	lexer l("test.txt");
+	for (std::vector<token>::iterator it = l.tokens->begin();
+		it != l.tokens->end(); 
+		it++) {
+		std::cout << (*it).tok << "<" << (*it).content << "> ";
+	}
+	std::cout << "\n";
 
 	return 0;
 }

@@ -3,7 +3,7 @@ DEBUG = -g
 CFLAG = -std=c++11
 
 all:
-	$(CC) $(CFLAG) test.cpp symboltable.cpp -o test
+	$(CC) $(CFLAG) *.cpp -o test
 
 clean:
 	rm test

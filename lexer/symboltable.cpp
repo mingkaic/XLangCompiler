@@ -1,42 +1,34 @@
 #include "symboltable.hpp"
 
-struct tokenData {
-	std::string pattern;
-	size_t priority;
-};
+static std::regex tokenregex("\\s*\\S+\\s*,\\s*//\\s*(.+)");
+static std::vector<std::string> patterns;
 
-static std::regex tokenregex("\\s*(\\S+)\\s+(.+)");
-static std::map<std::string, tokenData> tokenTable;
-
-void populateTokenMap(std::string tokenfname) {
+void populateTokenMap() {
 	std::ifstream fstr;
-	fstr.open(tokenfname);
+	fstr.open(TOKENFILE);
   	std::smatch sm; 
 
 	std::string line;
-	std::string token;
-	tokenData dbuff;
-	size_t lineN = 0;
+	std::string pat;
 	while (std::getline(fstr, line)) {
-		std::regex_match(line, sm, tokenregex);
-		token = sm[1];
-		dbuff.pattern = sm[2];
-		dbuff.priority = lineN;
-		tokenTable.insert(std::pair<std::string, tokenData>(token, dbuff));
-		lineN++;
+		if (std::regex_match(line, sm, tokenregex)) {
+			patterns.push_back(sm[1]);
+		}
 	}
 
 	fstr.close();
 }
 
-std::string getPattern(std::string tokenname) {
-	return tokenTable.at(tokenname).pattern;
+std::string* getPattern(TOKEN tok) {
+	if (tok < patterns.size()) {
+		return new std::string(patterns[tok]);
+	}
+	return NULL;
 }
 
-void mapAccess(std::function<void(std::string, std::string, size_t)> perform) {
-	for (typename std::map<std::string, tokenData>::iterator it = tokenTable.begin(); 
-		it!=tokenTable.end(); 
-		++it) {
-		perform(it->first, it->second.pattern, it->second.priority);
+void mapAccess(std::function<void(TOKEN, std::string)> perform) {
+	size_t end = patterns.size();
+	for (size_t i = 0; i < end; i++) {
+		perform((TOKEN) i, patterns[i]);
 	}
 }

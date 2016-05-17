@@ -1,38 +1,32 @@
-#include <string>
-#include <iostream>
-#include <regex>
-#include <vector>
-#include "symboltable.hpp"
-
-struct token {
-	std::string tokenname;
-	std::string content;
-	size_t priority;
-};
+#include "scanner.hpp"
 
 void scan(std::istream& in, std::ostream& out) {
-	std::regex comments(getPattern("T_COMMENT")); // editable
+	std::string* commentstr = getPattern(T_COMMENT);
+	if (NULL == commentstr) {}
+	else {
+		std::regex comments(*commentstr);
 
-	std::string line;
-	while (std::getline(in, line)) {
-		std::string no_comment;
-		std::regex_replace(std::back_inserter(no_comment), 
-			line.begin(), line.end(), comments, "");
-		out << no_comment << "\n";
+		std::string line;
+		while (std::getline(in, line)) {
+			std::string no_comment;
+			std::regex_replace(std::back_inserter(no_comment), 
+				line.begin(), line.end(), comments, "");
+			out << no_comment << "\n";
+		}
+		delete commentstr;
 	}
 	out << std::endl;
 }
 
-void lex(std::string lexeme) {
+std::vector<token>* lex(std::string lexeme) {
 	std::map<size_t, token> tokenmap;
-	mapAccess([lexeme, &tokenmap](std::string tok, std::string patStr, size_t priority) {
+	mapAccess([lexeme, &tokenmap](TOKEN tok, std::string patStr) {
 		std::smatch matcher;
 		std::regex pattern(patStr);
 		std::string lexemeCpy = lexeme;
 		size_t pos = 0;
 		token t;
-		t.tokenname = tok;
-		t.priority = priority;
+		t.tok = tok;
 
 		while (std::regex_search(lexemeCpy, matcher, pattern)) {
 			pos += matcher.position(1);
@@ -42,31 +36,28 @@ void lex(std::string lexeme) {
 			if (prev == tokenmap.end() || 
 				prev->second.content.size() < t.content.size() ||
 				(prev->second.content.size() == t.content.size() 
-					&& t.priority > prev->second.priority)) {
+					&& t.tok > prev->second.tok)) {
 				if (prev != tokenmap.end()) {
 					tokenmap.erase(pos);
 				}
 				tokenmap.insert(std::pair<size_t, token>(pos, t));
 			}
 
-			pos += matcher[1].length(); // additional length
+			pos += matcher[1].length(); // additional length from current match
 			lexemeCpy = matcher.suffix().str();
 		}
 	});
-	std::vector<token> tokenlist;
+	// filter out overlapping tokens
+	std::vector<token>* tokenlist = new std::vector<token>;
 	size_t lastPos = 0;
     for (typename std::map<size_t, token>::iterator it = tokenmap.begin();
     	it != tokenmap.end();
     	it++) {
     	// take biggest token
     	if (it->first >= lastPos) {
-    		tokenlist.push_back(it->second);
+    		tokenlist->push_back(it->second);
     		lastPos += it->second.content.size();
     	}
     }
-    for (typename std::vector<token>::iterator it = tokenlist.begin();
-    	it != tokenlist.end();
-    	it++) {
-    	std::cout << (*it).tokenname << "(" << (*it).content << ")" << std::endl; 
-    }
+    return tokenlist;
 }
