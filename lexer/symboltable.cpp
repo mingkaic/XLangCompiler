@@ -1,7 +1,8 @@
 #include "symboltable.hpp"
 
-static std::regex tokenregex("\\s*\\S+\\s*,\\s*//\\s*(.+)");
+static std::regex tokenregex("\\s*(\\S+)\\s*,\\s*//\\s*(.+)");
 static std::vector<std::string> patterns;
+static std::vector<std::string> toknames;
 
 void populateTokenMap() {
 	std::ifstream fstr;
@@ -12,7 +13,8 @@ void populateTokenMap() {
 	std::string pat;
 	while (std::getline(fstr, line)) {
 		if (std::regex_match(line, sm, tokenregex)) {
-			patterns.push_back(sm[1]);
+			toknames.push_back(sm[1]);
+			patterns.push_back(sm[2]);
 		}
 	}
 
@@ -24,6 +26,10 @@ std::string* getPattern(TOKEN tok) {
 		return new std::string(patterns[tok]);
 	}
 	return NULL;
+}
+
+std::string getTokName(TOKEN tok) {
+	return toknames[tok];
 }
 
 void mapAccess(std::function<void(TOKEN, std::string)> perform) {

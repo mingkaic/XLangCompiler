@@ -9,7 +9,7 @@
 
 struct token {
 	TOKEN tok;
-	std::string content;
+	std::string lexeme;
 };
 
 // remove T_COMMENT tokens

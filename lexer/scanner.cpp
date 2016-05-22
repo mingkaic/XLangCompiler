@@ -30,12 +30,12 @@ std::vector<token>* lex(std::string lexeme) {
 
 		while (std::regex_search(lexemeCpy, matcher, pattern)) {
 			pos += matcher.position(1);
-			t.content = matcher[1];
+			t.lexeme = matcher[1];
 			std::map<size_t, token>::iterator prev = tokenmap.find(pos);
 
 			if (prev == tokenmap.end() || 
-				prev->second.content.size() < t.content.size() ||
-				(prev->second.content.size() == t.content.size() 
+				prev->second.lexeme.size() < t.lexeme.size() ||
+				(prev->second.lexeme.size() == t.lexeme.size() 
 					&& t.tok > prev->second.tok)) {
 				if (prev != tokenmap.end()) {
 					tokenmap.erase(pos);
@@ -55,8 +55,14 @@ std::vector<token>* lex(std::string lexeme) {
     	it++) {
     	// take biggest token
     	if (it->first >= lastPos) {
+    		if (it->first > lastPos) {
+	    		std::string oddity = lexeme.substr(lastPos, it->first-lastPos);
+	    		std::cout << "WARNING! " << oddity << " does not match any token\n";
+	    		lastPos = it->first;
+	    	}
+
     		tokenlist->push_back(it->second);
-    		lastPos += it->second.content.size();
+    		lastPos += it->second.lexeme.size();
     	}
     }
     return tokenlist;

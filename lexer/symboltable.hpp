@@ -16,5 +16,8 @@ void populateTokenMap();
 // @remark: please deallocate returned string
 std::string* getPattern(TOKEN tok);
 
+// utility token verify function
+std::string getTokName(TOKEN tok);
+
 // iterate through map performing input function
 void mapAccess(std::function<void(TOKEN, std::string)> perform);

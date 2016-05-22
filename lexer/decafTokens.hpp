@@ -1,8 +1,8 @@
 enum TOKEN {
 T_ID,             //([A-Za-z_](?:\w)*)
-T_INTCONSTANT,    //([1-9]\d*|0[xX][0-9A-Fa-f]+)
-T_STRINGCONSTANT, //"((?:[^\\\n"]|\\[abtnvfr\\'\"])+)"
-T_CHARCONSTANT,   //'([^\\\n']|\\[abtnvfr\\\'"])'
+T_INTCONSTANT,    //((?:[1-9]\d*|0[xX][0-9A-Fa-f]+)|0)
+T_STRINGCONSTANT, //("(?:[^\\\n"]|\\[abtnvfr\\'\"])+")
+T_CHARCONSTANT,   //('[^\\\n']|\\[abtnvfr\\\'"]')
 T_AND,            //(&&)
 T_ASSIGN,         //(=)
 T_BOOLTYPE,       //(bool)

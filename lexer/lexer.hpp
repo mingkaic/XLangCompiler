@@ -11,14 +11,16 @@ struct lexer {
 	std::vector<token>* tokens;
 
 	lexer (std::string fname) {
-		std::ifstream testfile;
+		std::ifstream tokenf;
 		populateTokenMap();
-		testfile.open(fname);
-		std::stringstream gatherer;
-		scan(testfile, gatherer);
-		std::string content = gatherer.str();
-		tokens = lex(content);
-		testfile.close();
+		tokenf.open(fname);
+		if (tokenf.is_open()) {
+			std::stringstream gatherer;
+			scan(tokenf, gatherer);
+			std::string content = gatherer.str();
+			tokens = lex(content);
+			tokenf.close();
+		}
 	}
 
 	~lexer () {
