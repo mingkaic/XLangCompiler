@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
 	for (std::vector<token>::iterator it = l.tokens->begin();
 		it != l.tokens->end(); 
 		it++) {
-		std::cout << getTokName((*it).tok) << "<" << (*it).lexeme << "> ";
+		std::cout << getTokName((*it).tok) << " " << (*it).lexeme << "\n";
 	}
 	std::cout << "\n";
 

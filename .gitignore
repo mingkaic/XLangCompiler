@@ -37,6 +37,7 @@
 *.log
 *.log.*
 *.sig
+*.xcodeproj
 
 pkg/
 src/
