@@ -10,7 +10,13 @@
 #include "ebnfout.hpp"
 
 int main(int argc, const char * argv[]) {
-    EBNFCompile("decafToken.txt", "decafGrammar.txt");
+    try {
+    ebnf::compile("decafToken.txt", "decafGrammar.txt", "test.txt");
+    } catch (std::exception e) {
+        std::cout << e.what() << std::endl;
+        return -1;
+    }
     
+    //ebnf::serialize();
     return 0;
 }

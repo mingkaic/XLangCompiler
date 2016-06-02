@@ -6,12 +6,17 @@
 //  Copyright © 2016 Mingkai Chen. All rights reserved.
 //
 
-#include "ebnfout.hpp"
+#define SEARCH_HEADER "searchstate.hpp"
 #define OUTPUT_HEADER "out.hpp"
 #define OUTPUT_SOURCE "out.cpp"
 
+#include "ebnfout.hpp"
+#include SEARCH_HEADER
+
 #include <iostream>
-void string2Tree(state* node, std::vector<std::string>& out, size_t height = 0) {
+namespace ebnf {
+
+void string2Tree (state* node, std::vector<std::string>& out, size_t height = 0) {
     if (out.size() == height) {
         out.push_back("height ");
         out[height].push_back('0'+height);
@@ -21,12 +26,25 @@ void string2Tree(state* node, std::vector<std::string>& out, size_t height = 0) 
     out[height].append(node->content);
     out[height].push_back('>');
     out[height].push_back(' ');
-    for (std::vector<state*>::iterator it = node->nexts.begin(); it != node->nexts.end(); it++) {
-        string2Tree(*it, out, height+1);
+    
+    if (TERM == node->type) {
+        return;
     }
+    size_t i = 0;
+    size_t j = 0;
+    if (END_GROUP == node->type && node->canExit()) {
+        return;
+    }
+    node->visitChildren([&out, height, i, &j](searchstate* s) {
+        if (j >= i) {
+            state* st = dynamic_cast<state*>(s);
+            string2Tree(st, out, height+1);
+        }
+        j++;
+    });
 }
 
-void printTree(state* node) {
+void printTree (state* node) {
     if (node == NULL) return;
     std::vector<std::string> tree;
     string2Tree(node, tree);
@@ -38,42 +56,90 @@ void printTree(state* node) {
     std::cout << "----------------------------\n";
 }
 
-void EBNFCompile(std::string tokenfile, std::string grammarfile) {
-    std::ifstream ftok(tokenfile);
-    std::ifstream fgram(grammarfile);
+static void fileMapper(std::string file,
+    StateMap& map,
+    std::vector<std::string>& tokenOrder) {
+    std::ifstream fstr(file);
+    std::string str((std::istreambuf_iterator<char>(fstr)),
+        std::istreambuf_iterator<char>());
+    lexer lex(str);
+    parse(lex, map, tokenOrder);
+}
+
+void compile (std::string tokenfile, std::string grammarfile, std::string infile) {
+    std::ifstream fstr(infile);
+    std::string str((std::istreambuf_iterator<char>(fstr)), std::istreambuf_iterator<char>());
+    StateMap tokens;
+    StateMap statements;
+    matcher match;
+    std::vector<std::string> tokPriority;
+    
+    fileMapper(tokenfile, tokens, tokPriority);
+    
+    for (std::string tok : tokPriority) {
+        statements.insert(std::pair<std::string, state*>(tok, tokens[tok]));
+        match.put(tok, tokens[tok]);
+    }
+    
+    compiler::lexer lex(match, str);
+    
+    for (compiler::token t = lex.getToken();
+        t.t != -1;
+        t = lex.getToken()) {
+        std::cout << match.vec[t.t] << " <" << t.content << ">\n";
+    }
+    
+    fileMapper(grammarfile, statements, tokPriority);
+}
+
+void serialize (std::string tokenfile, std::string grammarfile) {
     std::ofstream outhead(OUTPUT_HEADER);
     std::ofstream outsrc(OUTPUT_SOURCE);
-    std::string tstr((std::istreambuf_iterator<char>(ftok)),
-                 std::istreambuf_iterator<char>());
-    std::string sstr((std::istreambuf_iterator<char>(fgram)),
-                 std::istreambuf_iterator<char>());
-
-    lexer tokens(tstr);
-    lexer statements(sstr);
-    
-    std::map<std::string, state*> tokenMap;
-    std::map<std::string, state*> stateMap;
-    std::map<std::string, size_t> indexLookup;
-    parse(tokens, tokenMap);
-    parse(statements, stateMap);
-    
     outsrc << "#include \"" << OUTPUT_HEADER << "\"\n";
+    outhead << "#include \"" << SEARCH_HEADER << "\"\n";
+    
+    StateMap tokens;
+    StateMap statements;
+    //fileMapper(tokenfile, tokens);
+    //fileMapper(grammarfile, statements);
+    
     outhead << "enum TOKEN {";
-    size_t index = 0;
-    for (std::map<std::string, state*>::iterator it = tokenMap.begin();
-        it != tokenMap.end();
+    for (std::map<std::string, state*>::iterator it = tokens.begin();
+        it != tokens.end();
         it++) {
-        indexLookup.insert(std::pair<std::string, size_t>(it->first, index++));
         outhead << it->first << ", ";
         std::cout << it->first << "\n";
         printTree(it->second);
     }
-    outhead << "};";
-    for (std::map<std::string, state*>::iterator it = stateMap.begin();
-        it != stateMap.end();
+    outhead << "};\n";
+
+    for (std::map<std::string, state*>::iterator it = statements.begin();
+        it != statements.end();
         it++) {
-        indexLookup.insert(std::pair<std::string, size_t>(it->first, index++));
         std::cout << it->first << "\n";
         printTree(it->second);
     }
+}
+
+}
+
+namespace compiler {
+
+void lexer::lex (std::string in) {
+    token buffer;
+    while (0 < in.size()) {
+        size_t next = 0;
+        std::vector<signed> toks = match.nextMatch(in, next);
+        if (0 == toks.size()) {
+            std::string errmessage = "cannot match token ";
+            errmessage.push_back(in[0]);
+            throw std::domain_error(errmessage);
+        }
+        buffer.t = toks[0];
+        buffer.content = in.substr(0, next-1);
+        result.push(buffer);
+        in = in.substr(next-1);
+    }
+}
+
 }

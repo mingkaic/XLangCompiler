@@ -5,7 +5,7 @@ T_BREAK          = "break".
 T_COMMA          = ",".
 T_CONTINUE       = "continue".
 T_DIV            = "/".
-T_DOT            = ".".
+T_DOT            = "\.".
 T_ELSE           = "else".
 T_EQ             = "==".
 T_EXTERN         = "extern".
@@ -16,26 +16,26 @@ T_GEQ            = ">=".
 T_GT             = ">".
 T_IF             = "if".
 T_INTTYPE        = "int".
-T_LCB            = "{".
+T_LCB            = "\{".
 T_LEFTSHIFT      = "<<".
 T_LEQ            = "<=".
-T_LPAREN         = "(".
-T_LSB            = "[".
+T_LPAREN         = "\(".
+T_LSB            = "\[".
 T_LT             = "<".
 T_MINUS          = "-".
 T_MOD            = "%".
-T_MULT           = "*".
+T_MULT           = "\*".
 T_NEQ            = "!=".
 T_NOT            = "!".
 T_NULL           = "null".
 T_OR             = "||".
 T_PACKAGE        = "package".
-T_PLUS           = "+".
-T_RCB            = "}".
+T_PLUS           = "\+".
+T_RCB            = "\}".
 T_RETURN         = "return".
 T_RIGHTSHIFT     = ">>".
-T_RPAREN         = ")".
-T_RSB            = "]".
+T_RPAREN         = "\)".
+T_RSB            = "\]".
 T_SEMICOLON      = ";".
 T_STRINGTYPE     = "string".
 T_TRUE           = "true".
@@ -44,26 +44,24 @@ T_VOID           = "void".
 T_WHILE          = "while".
 
 T_COMMENT        = "//" { char_no_nl } .
-T_INTCONSTANT    = decimal_lit | hex_lit (* see section on Integer literals *).
-T_CHARCONSTANT   = char_lit.
-T_ID             = identifier (* see section on Identifiers *).
-T_STRINGCONSTANT = string_lit (* see section on String literals *).
-T_WHITESPACE     = whitespace (* see section on Whitespace *).
+T_INTCONSTANT    = decimal_lit | hex_lit (* see section on Integer literals *) .
+T_CHARCONSTANT   = char_lit .
+T_ID             = letter { letter | digit } .
+T_STRINGCONSTANT = string_lit (* see section on String literals *) .
+T_WHITESPACE     = whitespace (* see section on Whitespace *) .
 
 letter           = "[A-Za-z_]" .
 decimal_digit    = "[0-9]" .
 hex_digit        = "[0-9A-Fa-f]" .
-
-identifier       = letter { letter | digit } .
 
 decimal_lit      = { decimal_digit }+ .
 hex_lit          = "0[x|X]" { hex_digit }+ .
 
 char_lit         = "'" ( char | escaped_char ) "'" .
 string_lit       = '"' { char | escaped_char } '"' .
-escaped_char     = "\" ( "n" | "r" | "t" | "v" | "f" | "a" | "b" | `\` | "'" | `"` ) .
+escaped_char     = "\\" ( "n" | "r" | "t" | "v" | "f" | "a" | "b" | "\\" | "'" | '"' ) .
 
 char_no_nl       = "." (* all ASCII characters from 7 ... 13 and 32 ... 126 except char 10 "\n" *) .
-char             = "^\" (* all ASCII characters from 7 ... 13 and 32 ... 126 except char 92 "\" *) .
+char             = "^\\" (* all ASCII characters from 7 ... 13 and 32 ... 126 except char 92 "\" *) .
 
 whitespace       = { "[\n\r\t\v\f ]" }+ .

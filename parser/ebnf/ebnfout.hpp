@@ -15,6 +15,42 @@
 #include <map>
 #include "ebnfparser.hpp"
 
-void EBNFCompile(std::string tokenfile, std::string grammarfile);
+namespace ebnf {
+
+void compile (std::string tokenfile, std::string grammarfile, std::string infile);
+
+void serialize (std::string tokenfile, std::string grammarfile);
+
+}
+
+namespace compiler {
+
+struct token {
+    signed t = -1;
+    std::string content;
+};
+
+class lexer {
+    private:
+        matcher& match;
+        std::queue<token> result;
+    
+    public:
+        lexer (matcher& match) : match(match) {}
+        lexer (matcher& match, std::string in) : match(match) { lex(in); }
+        void lex (std::string in);
+
+        token getToken (void) {
+            token t;
+            t.t = -1;
+            if (false == result.empty()) {
+                t = result.front();
+                result.pop();
+            }
+            return t;
+        }
+};
+
+}
 
 #endif /* ebnfout_hpp */

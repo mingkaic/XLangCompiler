@@ -9,6 +9,8 @@
 #include "ebnflexer.hpp"
 #include <regex>
 
+namespace ebnf {
+
 // ISO 14977 standard
 #define E_ASSIGN    '='
 #define E_TERM1     ';'
@@ -36,25 +38,14 @@
 #define E_COMMENT   std::regex("\\*.*\\*|\\?.*\\?")
 #define E_TOK_SYM   std::regex("(\\s*)")
 
-static std::string trim (const std::string& str, const std::string& whitespace = " \t\r\n\v\f") {
-    const auto strBegin = str.find_first_not_of(whitespace);
-    if (strBegin == std::string::npos)
-        return ""; // no content
-
-    const auto strEnd = str.find_last_not_of(whitespace);
-    const auto strRange = strEnd - strBegin + 1;
-
-    return str.substr(strBegin, strRange);
-}
-
-static inline bool isAlnum(char c) {
+static inline bool isAlnum (char c) {
     return (c >= 'a' && c <= 'z') ||
             (c >= 'A' && c <= 'Z') ||
             (c >= '0' && c <= '9') ||
             (c == '_');
 }
 
-std::string lexer::walkNIgnore(std::string in, char ignore, char end, size_t& counter) {
+std::string lexer::walkNIgnore (std::string in, char ignore, char end, size_t& counter) {
     std::string buffer;
     if (counter >= in.size()) {
         return buffer;
@@ -74,7 +65,7 @@ std::string lexer::walkNIgnore(std::string in, char ignore, char end, size_t& co
 	return buffer;
 }
 
-std::string lexer::walkNCount(std::string in, char begin, char end, size_t& counter, bool contentOblivious) {
+std::string lexer::walkNCount (std::string in, char begin, char end, size_t& counter, bool contentOblivious) {
 	std::string buffer;
     if (counter >= in.size()) {
         return buffer;
@@ -107,7 +98,7 @@ std::string lexer::walkNCount(std::string in, char begin, char end, size_t& coun
 	return buffer;
 }
 
-std::string lexer::readWord(std::string in, size_t& counter) {
+std::string lexer::readWord (std::string in, size_t& counter) {
     std::string buffer;
     bool endFound = false;
     size_t end = in.size();
@@ -123,13 +114,7 @@ std::string lexer::readWord(std::string in, size_t& counter) {
 	return buffer;
 }
 
-lexer::lexer(std::string in) {
-    lex(in);
-}
-
 void lexer::lex (std::string in) {
- 	std::regex symbol("(\\s*([\\(\\)\\[\\]\\+\\{\\}-\\.;=\\|,])\\s*)");
-    in = trim(std::regex_replace(in, symbol, "$2"));
     size_t i = 0;
     eToken buffer;
     
@@ -193,6 +178,9 @@ void lexer::lex (std::string in) {
                 case '\t':
                 case '\v':
                 case '\f':
+                    buffer.t = WHITESPACE;
+                    i++;
+                    break;
                 case E_CONCAT:
                     buffer.t = CONCAT;
                     i++;
@@ -214,7 +202,9 @@ void lexer::lex (std::string in) {
                         buffer.content = readWord(in, i);
                     } else {
                         // err
-                        i++;
+                        std::string errmessage = "invalid token : ";
+                        errmessage.push_back(in[i]);
+                        throw std::domain_error(errmessage);
                     }
             }
             if (buffer.t != HOLDER) {
@@ -224,4 +214,6 @@ void lexer::lex (std::string in) {
             }
         }
     }
+}
+
 }

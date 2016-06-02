@@ -11,8 +11,11 @@
 #ifndef ebnflexer_hpp
 #define ebnflexer_hpp
 
+#include <exception>
 #include <string>
 #include <queue>
+
+namespace ebnf {
 
 enum E_TOKEN {
     SYM,
@@ -23,11 +26,13 @@ enum E_TOKEN {
     REP,
     REP_PLUS,
     CONCAT,
+    WHITESPACE,
     UNION,
     NOT,
     QUOTE,
     DOUBLE_QUOTE,
     COMMENT,
+    END_GROUP,
     HOLDER,
 };
 
@@ -40,17 +45,17 @@ class lexer {
     private:
         std::queue<eToken> result;
 
-        static std::string walkNIgnore(std::string in, char ignore, char end, size_t& counter);
-        static std::string walkNCount(std::string in, char begin, char end, size_t& counter, bool contentOblivious = false);
-        static std::string readWord(std::string in, size_t& counter);
+        static std::string walkNIgnore (std::string in, char ignore, char end, size_t& counter);
+        static std::string walkNCount (std::string in, char begin, char end, size_t& counter, bool contentOblivious = false);
+        static std::string readWord (std::string in, size_t& counter);
     public:
-        lexer() {}
+        lexer (void) {}
         
-        lexer(std::string in);
+        lexer (std::string in) { lex(in); }
     
-        void lex(std::string in);
+        void lex (std::string in);
     
-        eToken getToken() {
+        eToken getToken (void) {
             eToken t;
             t.t = HOLDER;
             if (false == result.empty()) {
@@ -60,5 +65,7 @@ class lexer {
             return t;
         }
 };
+
+}
 
 #endif /* ebnflexer_hpp */
